@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+transformers
+torch
+sentence-transformers
+chromadb
+sqlalchemy
+dateparser
+google-api-python-client
+google-auth-oauthlib
+google-auth-httplib2

@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+
+credentials.json
+token.json
+gmail_token.json
+
+*.db
+
+storage/memory.json
