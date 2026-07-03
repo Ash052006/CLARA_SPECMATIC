@@ -1,0 +1,18 @@
+{
+    "scripts":  {
+                    "test:contract":  "specmatic test contracts/clara_api.yaml --testBaseURL=http://127.0.0.1:8000",
+                    "test:resilience":  "powershell -ExecutionPolicy Bypass -File scripts/run_resilience_tests.ps1",
+                    "stub":  "specmatic stub contracts/clara_api.yaml --host=127.0.0.1 --port=9000",
+                    "virtualize":  "specmatic virtualize contracts/clara_api.yaml --host=127.0.0.1 --port=9000",
+                    "compatibility":  "specmatic backward-compatibility-check --repo-dir=. --base-branch=origin/main --target-path=contracts/clara_api.yaml",
+                    "docker:build":  "docker compose build",
+                    "docker:api":  "docker compose up clara-api",
+                    "docker:test:contract":  "docker compose run --rm specmatic-test",
+                    "docker:stub":  "docker compose up specmatic-stub",
+                    "docker:compatibility":  "docker compose run --rm compatibility",
+                    "docker:smoke":  "docker compose run --rm smoke-tests"
+                },
+    "devDependencies":  {
+                            "specmatic":  "latest"
+                        }
+}

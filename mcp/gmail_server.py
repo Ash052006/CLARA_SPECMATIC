@@ -408,6 +408,7 @@ class GmailServer(MCPServer):
                     .messages()
                     .list(
                         userId="me",
+                        q="in:inbox",
                         maxResults=1
                     )
                     .execute()
@@ -480,6 +481,9 @@ class GmailServer(MCPServer):
                     f"Re: {subject}"
                 )
 
+                message["In-Reply-To"] = latest_id
+                message["References"] = latest_id
+
                 raw = (
                     base64
                     .urlsafe_b64encode(
@@ -488,13 +492,16 @@ class GmailServer(MCPServer):
                     .decode()
                 )
 
+                thread_id = latest_email["threadId"]
+
                 sent_message = (
                     service.users()
                     .messages()
                     .send(
                         userId="me",
                         body={
-                            "raw": raw
+                            "raw": raw,
+                            "threadId": thread_id
                         }
                     )
                     .execute()

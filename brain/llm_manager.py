@@ -1,14 +1,34 @@
+import logging
+import os
+
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
 from transformers import pipeline
+
+
+logger = logging.getLogger(__name__)
 
 
 class LLMManager:
 
     def __init__(self):
 
-        self.classifier = pipeline(
-            "zero-shot-classification",
-            model="valhalla/distilbart-mnli-12-3"
-        )
+        self.classifier = None
+        self._load_classifier()
+
+    def _load_classifier(self):
+        try:
+            self.classifier = pipeline(
+                "zero-shot-classification",
+                model="valhalla/distilbart-mnli-12-3",
+                local_files_only=True,
+            )
+        except Exception as exc:
+            logger.warning(
+                "Unable to load zero-shot classifier locally; using rule-based fallback. %s",
+                exc,
+            )
+            self.classifier = None
 
     def understand(self, message):
 
@@ -96,10 +116,14 @@ class LLMManager:
         # Calendar Update Intent
         # -------------------------
 
-        if (
-            "move" in text
-            or "reschedule" in text
-            or "change" in text
+        if any(
+            word in text
+            for word in [
+                "update",
+                "move",
+                "reschedule",
+                "change"
+            ]
         ):
 
             return {
@@ -148,8 +172,7 @@ class LLMManager:
 
         return {
 
-            "user_message":
-            message,
+            "user_message": message,
 
             "intent":
             result["labels"][0],

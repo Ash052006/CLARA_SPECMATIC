@@ -1,4 +1,4 @@
-.venv/
+﻿.venv/
 __pycache__/
 *.pyc
 
@@ -7,5 +7,13 @@ token.json
 gmail_token.json
 
 *.db
-
 storage/memory.json
+.pytest_cache/
+.coverage
+htmlcov/
+.env.local
+.env.test
+.idea/
+.vscode/
+node_modules/
+build/

@@ -1,0 +1,18 @@
+{
+  "http-request": {
+    "method": "GET",
+    "path": "/api/status"
+  },
+  "http-response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "api": "Clara",
+      "version": "1.0.0",
+      "status": "ok",
+      "timestamp": "2026-06-29T12:00:00+00:00"
+    }
+  }
+}

@@ -11,11 +11,22 @@ class CalendarServer(MCPServer):
                 "entities",
                 {}
             )
+            print("ENTITIES:", entities)
+            meeting_time = entities.get(
+                "datetime"
+            )
+
+            if meeting_time:
+
+                return {
+                    "status": "success",
+                    "message":
+                    f"Meeting scheduled for "
+                    f"{meeting_time.strftime('%d-%m-%Y %I:%M %p')}"
+                }
 
             return {
-                "status": "success",
+                "status": "error",
                 "message":
-                f"Meeting scheduled for "
-                f"{entities.get('date','unknown')} "
-                f"at {entities.get('time','unknown')}"
+                "Could not determine meeting time"
             }

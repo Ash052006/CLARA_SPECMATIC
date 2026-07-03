@@ -61,6 +61,7 @@ class ConversationManager:
         analysis = self.llm.understand(
             message
         )
+        print("INTENT:", analysis)
 
         # =========================================
         # Step 2: Extract entities

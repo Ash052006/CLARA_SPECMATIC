@@ -1,4 +1,4 @@
-fastapi
+﻿fastapi
 uvicorn
 pydantic
 python-dotenv
@@ -11,3 +11,6 @@ dateparser
 google-api-python-client
 google-auth-oauthlib
 google-auth-httplib2
+pytest
+pytest-asyncio
+httpx

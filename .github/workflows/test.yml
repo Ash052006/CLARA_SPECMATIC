@@ -1,0 +1,73 @@
+﻿name: Clara tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js for Specmatic CLI
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Specmatic CLI
+        run: npm install
+
+      - name: Run FastAPI smoke tests
+        env:
+          CLARA_CONTRACT_TEST_MODE: '1'
+        run: pytest
+
+      - name: Run Specmatic backward compatibility check
+        run: npx specmatic backward-compatibility-check --repo-dir=. --base-branch=origin/${{ github.base_ref || 'main' }} --target-path=contracts/clara_api.yaml
+
+      - name: Start Clara contract-test provider
+        env:
+          CLARA_CONTRACT_TEST_MODE: '1'
+        run: |
+          uvicorn main:app --host 127.0.0.1 --port 8000 > clara.log 2>&1 &
+          echo $! > clara.pid
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8000/health && exit 0
+            sleep 1
+          done
+          cat clara.log
+          exit 1
+
+      - name: Run Specmatic contract tests
+        run: npx specmatic test contracts/clara_api.yaml --testBaseURL=http://127.0.0.1:8000
+
+      - name: Smoke test Specmatic service virtualization
+        run: |
+          npx specmatic stub contracts/clara_api.yaml --host=127.0.0.1 --port=9000 > specmatic-stub.log 2>&1 &
+          echo $! > specmatic-stub.pid
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:9000/ && exit 0
+            sleep 1
+          done
+          cat specmatic-stub.log
+          exit 1
+
+      - name: Stop services
+        if: always()
+        run: |
+          if [ -f clara.pid ]; then kill $(cat clara.pid) || true; fi
+          if [ -f specmatic-stub.pid ]; then kill $(cat specmatic-stub.pid) || true; fi

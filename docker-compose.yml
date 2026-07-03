@@ -1,0 +1,51 @@
+services:
+  clara-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: clara-specmatic:latest
+    environment:
+      CLARA_CONTRACT_TEST_MODE: "1"
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  specmatic-test:
+    image: clara-specmatic:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      clara-api:
+        condition: service_healthy
+    command: npx specmatic test contracts/clara_api.yaml --testBaseURL=http://clara-api:8000
+
+  specmatic-stub:
+    image: clara-specmatic:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npx specmatic stub contracts/clara_api.yaml --host=0.0.0.0 --port=9000
+    ports:
+      - "9000:9000"
+
+  compatibility:
+    image: clara-specmatic:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npx specmatic backward-compatibility-check --repo-dir=. --base-branch=origin/main --target-path=contracts/clara_api.yaml
+
+  smoke-tests:
+    image: clara-specmatic:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      CLARA_CONTRACT_TEST_MODE: "1"
+    command: python -m pytest

@@ -99,10 +99,16 @@ class GoogleCalendarServer(MCPServer):
 
         if action == "create_meeting":
 
-            start_time = (
-                datetime.now()
-                + timedelta(days=1)
+            start_time = entities.get(
+                "datetime"
             )
+            print("MEETING TIME:", start_time)
+            if not start_time:
+
+                return {
+                    "status": "error",
+                    "message": "Could not determine meeting time"
+                }
 
             end_time = (
                 start_time
@@ -438,18 +444,24 @@ class GoogleCalendarServer(MCPServer):
 
             event = events[0]
 
-            # Temporary version:
-            # move meeting to 5 PM tomorrow
+           
 
-            new_start = (
-                datetime.now()
-                .replace(
-                    hour=17,
-                    minute=0,
-                    second=0,
-                    microsecond=0
-                )
-                + timedelta(days=1)
+            new_start = entities.get(
+                "datetime"
+            )
+
+            print("UPDATE TIME:", new_start)
+
+            if not new_start:
+
+                return {
+                    "status": "error",
+                    "message": "Could not determine new meeting time"
+                }
+
+            new_end = (
+                new_start
+                + timedelta(hours=1)
             )
 
             new_end = (

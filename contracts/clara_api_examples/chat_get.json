@@ -1,0 +1,23 @@
+{
+  "http-request": {
+    "method": "GET",
+    "path": "/chat/(message:string)"
+  },
+  "http-response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "response": "Contract test response for: What time is my next meeting",
+      "timestamp": "2026-06-29T12:00:00+00:00",
+      "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+      "plan": [],
+      "tools": [],
+      "execution": [],
+      "memory": {},
+      "preferences": {},
+      "long_term": {}
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "http-request": {
+    "method": "GET",
+    "path": "/chat/(message:string)"
+  },
+  "http-response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "response": "Here is a draft email for the team.",
+      "timestamp": "2026-06-29T12:00:00+00:00",
+      "conversation_id": "223e4567-e89b-12d3-a456-426614174001",
+      "plan": [
+        {
+          "job": "email",
+          "steps": [
+            "draft a professional email",
+            "include a clear subject line",
+            "send the response"
+          ]
+        }
+      ],
+      "tools": [
+        "email.draft"
+      ],
+      "execution": [
+        {
+          "tool": "email.draft",
+          "status": "success"
+        }
+      ],
+      "memory": {},
+      "preferences": {},
+      "long_term": {}
+    }
+  }
+}

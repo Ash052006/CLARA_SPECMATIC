@@ -1,36 +1,14 @@
 import dateparser.search
 import re
 
-
 class EntityExtractor:
+
 
     def extract(self, message):
 
         entities = {}
 
         cleaned_message = message
-
-        # --------------------
-        # Extract Time
-        # --------------------
-
-        time_match = re.search(
-            r'\b\d{1,2}(:\d{2})?\s?(AM|PM|am|pm)\b',
-            message
-        )
-
-        if time_match:
-
-            entities["time"] = (
-                time_match.group()
-            )
-
-            cleaned_message = (
-                cleaned_message.replace(
-                    time_match.group(),
-                    ""
-                )
-            )
 
         # --------------------
         # Extract Email
@@ -87,22 +65,36 @@ class EntityExtractor:
             entities["body"] = body
 
         # --------------------
-        # Common Date Keywords
+        # Smart DateTime Extraction
         # --------------------
 
-        text = cleaned_message.lower()
+        dates = dateparser.search.search_dates(
+            cleaned_message,
+            settings={
+                "PREFER_DATES_FROM": "future"
+            }
+        )
 
-        if "tomorrow" in text:
+        if dates:
 
-            entities["date"] = (
-                "tomorrow"
+            parsed_datetime = dates[0][1]
+
+            entities["datetime"] = (
+                parsed_datetime
             )
 
-        elif "today" in text:
-
             entities["date"] = (
-                "today"
+                parsed_datetime.strftime(
+                    "%Y-%m-%d"
+                )
             )
+
+            entities["time"] = (
+                parsed_datetime.strftime(
+                    "%H:%M"
+                )
+            )
+
         # --------------------
         # Email Search Query
         # --------------------
@@ -118,6 +110,7 @@ class EntityExtractor:
             entities["search_query"] = (
                 sender_query
             )
+
         # --------------------
         # Reply Body
         # --------------------
@@ -132,29 +125,5 @@ class EntityExtractor:
                     .strip()
                 )
 
-        else:
-
-            # --------------------
-            # DateParser Fallback
-            # --------------------
-
-            dates = (
-                dateparser.search.search_dates(
-                    cleaned_message
-                )
-            )
-
-            if dates:
-
-                date_text = (
-                    dates[0][0]
-                    .strip()
-                )
-
-                if len(date_text) > 2:
-
-                    entities["date"] = (
-                        date_text
-                    )
-
         return entities
+

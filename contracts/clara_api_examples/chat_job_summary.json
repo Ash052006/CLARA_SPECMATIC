@@ -1,0 +1,39 @@
+{
+  "http-request": {
+    "method": "GET",
+    "path": "/chat/(message:string)"
+  },
+  "http-response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "response": "Summary of your last meeting is ready.",
+      "timestamp": "2026-06-29T12:00:00+00:00",
+      "conversation_id": "323e4567-e89b-12d3-a456-426614174002",
+      "plan": [
+        {
+          "job": "summary",
+          "steps": [
+            "review meeting notes",
+            "extract key points",
+            "return a concise summary"
+          ]
+        }
+      ],
+      "tools": [
+        "notes.summary"
+      ],
+      "execution": [
+        {
+          "tool": "notes.summary",
+          "status": "success"
+        }
+      ],
+      "memory": {},
+      "preferences": {},
+      "long_term": {}
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "http-request": {
+    "method": "GET",
+    "path": "/chat/(message:string)"
+  },
+  "http-response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "response": "Your next meeting is at 3:00 PM.",
+      "timestamp": "2026-06-29T12:00:00+00:00",
+      "conversation_id": "123e4567-e89b-12d3-a456-426614174000",
+      "plan": [
+        {
+          "job": "schedule",
+          "steps": [
+            "check calendar",
+            "find the next meeting",
+            "respond with the time"
+          ]
+        }
+      ],
+      "tools": [
+        "calendar.lookup"
+      ],
+      "execution": [
+        {
+          "tool": "calendar.lookup",
+          "status": "success"
+        }
+      ],
+      "memory": {},
+      "preferences": {},
+      "long_term": {}
+    }
+  }
+}

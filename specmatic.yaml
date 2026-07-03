@@ -1,0 +1,4 @@
+sources:
+  - provider: filesystem
+    provides:
+      - contracts/clara_api.yaml
