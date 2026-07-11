@@ -1,4 +1,11 @@
-sources:
-  - provider: filesystem
-    provides:
-      - contracts/clara_api.yaml
+---
+version: 3
+systemUnderTest:
+  service:
+    definitions:
+    - definition:
+        source:
+          filesystem:
+            directory: "."
+        specs:
+        - "contracts/clara_api.yaml"

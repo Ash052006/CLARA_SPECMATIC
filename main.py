@@ -225,3 +225,32 @@ def chat(message: str = Path(..., min_length=1, max_length=2000)):
         )
 
     return normalize_chat_response(response)
+@app.get("/actuator/mappings")
+def get_mappings(request: Request):
+    """
+    Lists all application endpoints.
+    Used for endpoint discovery and API coverage.
+    """
+
+    excluded_paths = {
+        "/docs",
+        "/redoc",
+        "/openapi.json",
+        "/docs/oauth2-redirect"
+    }
+
+    mappings = []
+
+    for route in request.app.routes:
+        if hasattr(route, "methods") and route.path not in excluded_paths:
+            mappings.append({
+                "path": route.path,
+                "methods": sorted(route.methods),
+                "name": route.name
+            })
+
+    return {
+        "application": "CLARA",
+        "totalEndpoints": len(mappings),
+        "mappings": mappings
+    }

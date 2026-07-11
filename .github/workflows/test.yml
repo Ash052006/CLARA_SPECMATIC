@@ -1,4 +1,4 @@
-﻿name: Clara tests
+﻿name: Clara CI
 
 on:
   push:
@@ -7,67 +7,96 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      - name: Set up Node.js for Specmatic CLI
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
-      - name: Install Python dependencies
+      - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install Specmatic CLI
+      - name: Install Specmatic
         run: npm install
 
-      - name: Run FastAPI smoke tests
+      - name: Run Unit Tests
         env:
-          CLARA_CONTRACT_TEST_MODE: '1'
+          CLARA_CONTRACT_TEST_MODE: "1"
         run: pytest
 
-      - name: Run Specmatic backward compatibility check
-        run: npx specmatic backward-compatibility-check --repo-dir=. --base-branch=origin/${{ github.base_ref || 'main' }} --target-path=contracts/clara_api.yaml
+      - name: Backward Compatibility Check
+        run: |
+          npx specmatic backward-compatibility-check \
+            --repo-dir=. \
+            --base-branch=origin/${{ github.base_ref || 'main' }} \
+            --target-path=contracts/clara_api.yaml
 
-      - name: Start Clara contract-test provider
+      - name: Start Clara
         env:
-          CLARA_CONTRACT_TEST_MODE: '1'
+          CLARA_CONTRACT_TEST_MODE: "1"
         run: |
           uvicorn main:app --host 127.0.0.1 --port 8000 > clara.log 2>&1 &
           echo $! > clara.pid
+
           for i in {1..30}; do
-            curl -fsS http://127.0.0.1:8000/health && exit 0
+            curl -fsS http://127.0.0.1:8000/health && break
             sleep 1
           done
-          cat clara.log
-          exit 1
 
-      - name: Run Specmatic contract tests
-        run: npx specmatic test contracts/clara_api.yaml --testBaseURL=http://127.0.0.1:8000
-
-      - name: Smoke test Specmatic service virtualization
+      - name: Run Contract + Schema Resiliency Tests
         run: |
-          npx specmatic stub contracts/clara_api.yaml --host=127.0.0.1 --port=9000 > specmatic-stub.log 2>&1 &
-          echo $! > specmatic-stub.pid
+          mkdir -p reports
+
+          npx specmatic test \
+            contracts/clara_api.yaml \
+            --testBaseURL=http://127.0.0.1:8000 \
+            --junitReportDir=reports
+
+      - name: Start Specmatic Stub
+        run: |
+          npx specmatic stub contracts/clara_api.yaml \
+            --host=127.0.0.1 \
+            --port=9000 \
+            > specmatic-stub.log 2>&1 &
+
+          echo $! > specmatic.pid
+
           for i in {1..30}; do
-            curl -fsS http://127.0.0.1:9000/ && exit 0
+            curl -fsS http://127.0.0.1:9000/ && break
             sleep 1
           done
-          cat specmatic-stub.log
-          exit 1
 
-      - name: Stop services
+      - name: Upload Specmatic Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: specmatic-reports
+          path: reports/
+
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-logs
+          path: |
+            clara.log
+            specmatic-stub.log
+
+      - name: Stop Services
         if: always()
         run: |
           if [ -f clara.pid ]; then kill $(cat clara.pid) || true; fi
-          if [ -f specmatic-stub.pid ]; then kill $(cat specmatic-stub.pid) || true; fi
+          if [ -f specmatic.pid ]; then kill $(cat specmatic.pid) || true; fi
